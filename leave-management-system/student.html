@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Student Dashboard</title>
+</head>
+<body>
+    <div class="container">
+        <h2>Student Dashboard</h2>
+        <div id="studentDetails"></div>
+        
+        <h3>Apply for Leave</h3>
+        <form id="leaveForm">
+            <select id="leaveType" required>
+                <option value="">Select Leave Type</option>
+                <option value="sick">Sick Leave</option>
+                <option value="casual">Casual Leave</option>
+                <option value="emergency">Emergency Leave</option>
+            </select>
+            <input type="date" id="fromDate" required>
+            <input type="date" id="toDate" required>
+            <textarea id="leaveReason" placeholder="Reason for Leave" required></textarea>
+            <button type="submit">Apply Leave</button>
+        </form>
+        
+        <h3>Your Leave Status</h3>
+        <div id="leaveStatus"></div>
+        
+        <button id="cancelLeave">Cancel Leave</button>
+        <button id="logout">Logout</button>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

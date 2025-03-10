@@ -1,0 +1,141 @@
+{
+    "users": [
+        {
+            "username": "rashmika",
+            "password": "rashmika123",
+            "role": "student",
+            "name": "RASHMIKA",
+            "registerNumber": "S001"
+        },
+        {
+            "username": "shakthi",
+            "password": "shakthi123",
+            "role": "student",
+            "name": "SHAKTHI",
+            "registerNumber": "S002"
+        },
+        {
+            "username": "guru",
+            "password": "guru123",
+            "role": "student",
+            "name": "GURU",
+            "registerNumber": "S003"
+        },
+        {
+            "username": "admin",
+            "password": "admin123",
+            "role": "admin"
+        }
+    ],
+    "leaves": []
+}
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const loginForm = document.getElementById("loginForm");
+    const leaveForm = document.getElementById("leaveForm");
+    const leaveRequestsDiv = document.getElementById("leaveRequests");
+    const leaveStatusDiv = document.getElementById("leaveStatus");
+    const cancelLeaveBtn = document.getElementById("cancelLeave");
+    const logoutBtn = document.getElementById("logout");
+
+    let currentUser = JSON.parse(localStorage.getItem("currentUser"));
+    let data = JSON.parse(localStorage.getItem("data")) || { users: [], leaves: [] };
+
+    // 🌟 LOGIN FUNCTION
+    if (loginForm) {
+        loginForm.addEventListener("submit", function (event) {
+            event.preventDefault();
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+
+            const user = data.users.find(u => u.username === username && u.password === password);
+
+            if (user) {
+                localStorage.setItem("currentUser", JSON.stringify(user));
+                window.location.href = user.role === "admin" ? "admin.html" : "student.html";
+            } else {
+                document.getElementById("errorMessage").innerText = "Invalid username or password!";
+            }
+        });
+    }
+
+    // 🌟 STUDENT DASHBOARD FUNCTIONALITY
+    if (currentUser && currentUser.role === "student") {
+        document.getElementById("studentDetails").innerHTML = `
+            <p><strong>Name:</strong> ${currentUser.name}</p>
+            <p><strong>Register No:</strong> ${currentUser.registerNumber}</p>
+        `;
+
+        // Submit Leave Request
+        if (leaveForm) {
+            leaveForm.addEventListener("submit", function (event) {
+                event.preventDefault();
+                const leaveType = document.getElementById("leaveType").value;
+                const fromDate = document.getElementById("fromDate").value;
+                const toDate = document.getElementById("toDate").value;
+                const leaveReason = document.getElementById("leaveReason").value;
+
+                const newLeave = {
+                    id: Date.now(), 
+                    studentName: currentUser.name,
+                    registerNumber: currentUser.registerNumber,
+                    leaveType,
+                    fromDate,
+                    toDate,
+                    leaveReason,
+                    status: "Pending" // Default status
+                };
+
+                data.leaves.push(newLeave);
+                localStorage.setItem("data", JSON.stringify(data));
+                alert("Leave request submitted!");
+                displayStudentLeaveStatus();
+            });
+        }
+
+        // Display Student's Leave Status
+        function displayStudentLeaveStatus() {
+            const studentLeaves = data.leaves.filter(leave => leave.registerNumber === currentUser.registerNumber);
+            leaveStatusDiv.innerHTML = studentLeaves.length > 0 ? studentLeaves.map(leave => `
+                <p><strong>Type:</strong> ${leave.leaveType} | <strong>Status:</strong> ${leave.status}</p>
+            `).join("") : "<p>No leave requests found.</p>";
+        }
+        displayStudentLeaveStatus();
+    }
+
+    // 🌟 ADMIN DASHBOARD FUNCTIONALITY
+    if (currentUser && currentUser.role === "admin") {
+        function displayLeaveRequests() {
+            leaveRequestsDiv.innerHTML = data.leaves.length > 0 ? data.leaves.map(leave => `
+                <div class="leave-request">
+                    <p><strong>Student:</strong> ${leave.studentName} (${leave.registerNumber})</p>
+                    <p><strong>Type:</strong> ${leave.leaveType}</p>
+                    <p><strong>From:</strong> ${leave.fromDate} | <strong>To:</strong> ${leave.toDate}</p>
+                    <p><strong>Reason:</strong> ${leave.leaveReason}</p>
+                    <p><strong>Status:</strong> ${leave.status}</p>
+                    ${leave.status === "Pending" ? `
+                        <button onclick="updateLeaveStatus(${leave.id}, 'Approved')">Approve</button>
+                        <button onclick="updateLeaveStatus(${leave.id}, 'Rejected')">Reject</button>
+                    ` : ""}
+                </div>
+                <hr>
+            `).join("") : "<p>No pending leave requests.</p>";
+        }
+
+        window.updateLeaveStatus = function (leaveId, newStatus) {
+            data.leaves = data.leaves.map(leave => leave.id === leaveId ? { ...leave, status: newStatus } : leave);
+            localStorage.setItem("data", JSON.stringify(data));
+            displayLeaveRequests();
+        };
+
+        displayLeaveRequests();
+    }
+
+    // 🌟 LOGOUT FUNCTION
+    if (logoutBtn) {
+        logoutBtn.addEventListener("click", function () {
+            localStorage.removeItem("currentUser");
+            window.location.href = "index.html";
+        });
+    }
+});
